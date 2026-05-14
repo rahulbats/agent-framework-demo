@@ -29,6 +29,9 @@ A comprehensive demo project showing AI agent architecture patterns on Azure. Ea
 | 10 | [Agent Evaluation](demos/10-agent-evaluation/) | "Quality gate for production? Regression testing?" |
 | 11 | [Agent Guardrails](demos/11-agent-guardrails/) | "Agent guardrails in addition to LLM guardrails?" |
 | 12 | [CI/CD Pipeline](demos/12-cicd-pipeline/) | "Azure DevOps pipeline with agent eval as quality gate?" |
+| 13 | [Foundry IQ](demos/13-foundry-iq/) | "Federated knowledge over SharePoint + AI Search + Blob without per-source RAG?" |
+| 14 | [Batch Inference](demos/14-batch-inference/) | "Overnight triage on thousands of submissions at 50% cost, off the live deployment?" |
+| 15 | [Document Intelligence](demos/15-document-intelligence/) | "PDFs / ACORDs / scanned loss runs → structured payload for the agent?" |
 
 ### 🏗️ Infrastructure
 
