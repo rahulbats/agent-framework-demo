@@ -1,0 +1,6 @@
+azure-ai-projects>=2.0.0
+azure-identity>=1.17.0
+azure-storage-blob>=12.19.0
+openai>=2.0.0
+python-dotenv>=1.0.0
+rich>=13.0.0

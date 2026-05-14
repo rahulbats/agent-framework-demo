@@ -1,0 +1,215 @@
+# Azure DevOps Pipeline for a Foundry-MANAGED Agent
+# Agent lives in Azure AI Foundry as a versioned definition
+# (no container, no ACR, no traffic-weight knob).
+#
+# Lint -> Test -> Publish new agent VERSION (staging) ->
+# Evaluate that version -> Promote (flip prod alias) -> Smoke -> Rollback-on-fail
+#
+# Prereqs (one-time):
+#   - Service connection 'Foundry-Azure-Connection' with Contributor +
+#     "Azure AI User" on the Foundry project.
+#   - Variable group 'foundry-agent' with:
+#       FOUNDRY_PROJECT_ENDPOINT  (e.g. https://<acct>.services.ai.azure.com/api/projects/<proj>)
+#       AGENT_NAME                (e.g. insurance-submission-agent)
+#       MODEL_DEPLOYMENT          (e.g. gpt-4o)
+#       PROD_VERSION_VAR_NAME     (App Config key the app reads, e.g. AGENT_VERSION)
+#       APP_CONFIG_NAME           (Azure App Configuration store name)
+#       EVAL_THRESHOLD            (e.g. 0.70  -- mean groundedness/relevance)
+
+trigger:
+  branches:
+    include: [main]
+  paths:
+    include:
+      - 'agents/insurance-submission-agent/**'   # instructions, tool manifest, eval data
+      - 'demos/10-agent-evaluation/**'
+
+variables:
+  - group: foundry-agent
+  - name: pythonVersion
+    value: '3.11'
+  - name: agentDir
+    value: 'agents/insurance-submission-agent'
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+  # ============================================================
+  # 1. Lint — validate the agent definition before touching Foundry
+  # ============================================================
+  - stage: Lint
+    displayName: 'Lint agent definition'
+    jobs:
+      - job: ValidateDefinition
+        steps:
+          - task: UsePythonVersion@0
+            inputs: { versionSpec: '$(pythonVersion)' }
+          - script: |
+              pip install pyyaml jsonschema
+              python scripts/validate_agent_definition.py $(agentDir)
+            displayName: 'Schema-check instructions.md, tools.yaml, eval/*.jsonl'
+
+  # ============================================================
+  # 2. Test — unit tests for any local tool/glue code
+  #    (the agent itself runs in Foundry; nothing to containerize)
+  # ============================================================
+  - stage: Test
+    displayName: 'Unit tests'
+    dependsOn: Lint
+    jobs:
+      - job: UnitTests
+        steps:
+          - task: UsePythonVersion@0
+            inputs: { versionSpec: '$(pythonVersion)' }
+          - script: |
+              pip install -r requirements.txt pytest pytest-cov
+              pytest tests/ --junitxml=test-results.xml --cov=. --cov-report=xml
+            displayName: 'pytest'
+          - task: PublishTestResults@2
+            inputs: { testResultsFormat: 'JUnit', testResultsFiles: 'test-results.xml' }
+            condition: always()
+
+  # ============================================================
+  # 3. Publish — create a NEW VERSION of the hosted agent (staging-only)
+  # ============================================================
+  - stage: Publish
+    displayName: 'Publish new agent version'
+    dependsOn: Test
+    jobs:
+      - job: CreateVersion
+        steps:
+          - task: UsePythonVersion@0
+            inputs: { versionSpec: '$(pythonVersion)' }
+          - script: pip install azure-ai-projects azure-identity
+            displayName: 'Install Foundry SDK'
+
+          - task: AzureCLI@2
+            displayName: 'agents.create_version()'
+            inputs:
+              azureSubscription: 'Foundry-Azure-Connection'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              # Uses the AzureCLI task's federated token via DefaultAzureCredential
+              inlineScript: |
+                python scripts/publish_agent_version.py \
+                  --project-endpoint "$(FOUNDRY_PROJECT_ENDPOINT)" \
+                  --agent-name "$(AGENT_NAME)" \
+                  --agent-dir "$(agentDir)" \
+                  --model "$(MODEL_DEPLOYMENT)" \
+                  --output-version-file "$(Build.ArtifactStagingDirectory)/new_version.txt"
+          - publish: '$(Build.ArtifactStagingDirectory)/new_version.txt'
+            artifact: candidate-version
+
+  # ============================================================
+  # 4. Evaluate — run Foundry evaluation against the new version
+  #    (uses azure-ai-evaluation; results show up in the portal too)
+  # ============================================================
+  - stage: Evaluate
+    displayName: 'Evaluate candidate version'
+    dependsOn: Publish
+    jobs:
+      - job: RunEval
+        steps:
+          - task: UsePythonVersion@0
+            inputs: { versionSpec: '$(pythonVersion)' }
+          - download: current
+            artifact: candidate-version
+          - script: pip install azure-ai-evaluation azure-ai-projects azure-identity
+            displayName: 'Install eval SDK'
+
+          - task: AzureCLI@2
+            displayName: 'Run evaluators + gate'
+            inputs:
+              azureSubscription: 'Foundry-Azure-Connection'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                CAND_VERSION=$(cat "$(Pipeline.Workspace)/candidate-version/new_version.txt")
+                echo "Evaluating $(AGENT_NAME) v${CAND_VERSION}"
+                python scripts/evaluate_agent_version.py \
+                  --project-endpoint "$(FOUNDRY_PROJECT_ENDPOINT)" \
+                  --agent-name "$(AGENT_NAME)" \
+                  --agent-version "${CAND_VERSION}" \
+                  --dataset "$(agentDir)/eval/dataset.jsonl" \
+                  --threshold "$(EVAL_THRESHOLD)" \
+                  --report "$(Build.ArtifactStagingDirectory)/eval_report.json"
+          - publish: '$(Build.ArtifactStagingDirectory)/eval_report.json'
+            artifact: eval-report
+
+  # ============================================================
+  # 5. Promote — flip the production version pointer
+  #    (the app reads AGENT_VERSION from App Configuration at startup)
+  # ============================================================
+  - stage: Promote
+    displayName: 'Promote to production'
+    dependsOn: Evaluate
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - deployment: PromoteVersion
+        environment: 'production'   # gate on approvals here
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: candidate-version
+
+                - task: AzureCLI@2
+                  name: snapshot
+                  displayName: 'Snapshot current prod version (for rollback)'
+                  inputs:
+                    azureSubscription: 'Foundry-Azure-Connection'
+                    scriptType: 'bash'
+                    scriptLocation: 'inlineScript'
+                    inlineScript: |
+                      PREV=$(az appconfig kv show \
+                        --name "$(APP_CONFIG_NAME)" \
+                        --key "$(PROD_VERSION_VAR_NAME)" \
+                        --query value -o tsv)
+                      echo "Previous prod version: ${PREV}"
+                      echo "##vso[task.setvariable variable=PREV_VERSION;isOutput=true]${PREV}"
+
+                - task: AzureCLI@2
+                  displayName: 'Flip App Config to candidate version'
+                  inputs:
+                    azureSubscription: 'Foundry-Azure-Connection'
+                    scriptType: 'bash'
+                    scriptLocation: 'inlineScript'
+                    inlineScript: |
+                      CAND=$(cat "$(Pipeline.Workspace)/candidate-version/new_version.txt")
+                      az appconfig kv set \
+                        --name "$(APP_CONFIG_NAME)" \
+                        --key  "$(PROD_VERSION_VAR_NAME)" \
+                        --value "${CAND}" --yes
+                      echo "Production now points at $(AGENT_NAME) v${CAND}"
+
+                - task: AzureCLI@2
+                  displayName: 'Smoke test live agent'
+                  inputs:
+                    azureSubscription: 'Foundry-Azure-Connection'
+                    scriptType: 'bash'
+                    scriptLocation: 'inlineScript'
+                    inlineScript: |
+                      pip install azure-ai-projects azure-identity
+                      python scripts/smoke_test_agent.py \
+                        --project-endpoint "$(FOUNDRY_PROJECT_ENDPOINT)" \
+                        --agent-name "$(AGENT_NAME)" \
+                        --agent-version "$(cat $(Pipeline.Workspace)/candidate-version/new_version.txt)"
+
+                - task: AzureCLI@2
+                  displayName: 'Rollback on smoke failure'
+                  condition: failed()
+                  inputs:
+                    azureSubscription: 'Foundry-Azure-Connection'
+                    scriptType: 'bash'
+                    scriptLocation: 'inlineScript'
+                    inlineScript: |
+                      PREV="$(snapshot.PREV_VERSION)"
+                      if [ -n "${PREV}" ]; then
+                        az appconfig kv set \
+                          --name "$(APP_CONFIG_NAME)" \
+                          --key  "$(PROD_VERSION_VAR_NAME)" \
+                          --value "${PREV}" --yes
+                        echo "Rolled back to v${PREV}"
+                      fi

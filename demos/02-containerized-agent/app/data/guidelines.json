@@ -1,0 +1,38 @@
+[
+    {
+        "program_id": "CP-100",
+        "program_name": "Commercial Property Standard",
+        "max_limit": "$15,000,000",
+        "eligible_states": ["GA", "FL", "TX", "CA", "NY", "NC", "SC", "TN", "VA"],
+        "eligible_occupancies": ["Office", "Retail", "Warehouse", "Light Manufacturing", "Manufacturing"],
+        "eligible_construction": ["Fire-resistive", "Non-combustible", "Masonry non-combustible"],
+        "min_year_built": 1990,
+        "max_loss_ratio": 0.60,
+        "sprinkler_required": false,
+        "max_claims_5yr": 5
+    },
+    {
+        "program_id": "CP-200",
+        "program_name": "Commercial Property Premium",
+        "max_limit": "$50,000,000",
+        "eligible_states": ["GA", "FL", "TX", "NC", "SC", "TN", "AL", "VA"],
+        "eligible_occupancies": ["Office", "Light Manufacturing", "Technology"],
+        "eligible_construction": ["Fire-resistive", "Non-combustible"],
+        "min_year_built": 2000,
+        "max_loss_ratio": 0.40,
+        "sprinkler_required": true,
+        "max_claims_5yr": 3
+    },
+    {
+        "program_id": "CP-300",
+        "program_name": "Manufacturing Specialty",
+        "max_limit": "$25,000,000",
+        "eligible_states": ["GA", "FL", "TX", "NC", "SC"],
+        "eligible_occupancies": ["Manufacturing", "Light Manufacturing", "Heavy Manufacturing"],
+        "eligible_construction": ["Fire-resistive"],
+        "min_year_built": 2000,
+        "max_loss_ratio": 0.50,
+        "sprinkler_required": true,
+        "max_claims_5yr": 4
+    }
+]

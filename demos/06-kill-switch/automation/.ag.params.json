@@ -1,0 +1,15 @@
+{
+  "contentVersion": "1.0.0.0",
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "parameters": {
+    "actionGroupName": {
+      "value": "kill-switch-ag"
+    },
+    "logicAppId": {
+      "value": "/subscriptions/e708e606-ba77-4156-8003-44fd88b6aa08/resourceGroups/agent-framework-demo/providers/Microsoft.Logic/workflows/kill-switch-logicapp"
+    },
+    "callbackUrl": {
+      "value": "https://prod-25.eastus2.logic.azure.com:443/workflows/f5b83caa95ce47afaa2675608b1ead68/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=-7qF8-cayl7voaXIW_rtJGCLME6MjYTKIh5sdneSibA"
+    }
+  }
+}

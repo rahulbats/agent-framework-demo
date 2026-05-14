@@ -1,0 +1,12 @@
+LOSS RUN STATEMENT
+Prepared for: Acme Corporation
+Policy Period: 01/01/2021 - 12/31/2025
+Carrier: National Indemnity Group
+
+CLAIM DETAIL:
+Claim #1: Date: 03/15/2022 | Type: Equipment Breakdown | Incurred: $45,000 | Status: Closed
+Claim #2: Date: 11/02/2023 | Type: Water Damage | Incurred: $82,000 | Status: Closed
+Claim #3: Date: 06/18/2024 | Type: Property Damage - Wind | Incurred: $15,000 | Status: Open
+
+SUMMARY:
+Total Claims: 3 | Total Incurred: $142,000 | Total Paid: $127,000 | Total Reserved: $15,000

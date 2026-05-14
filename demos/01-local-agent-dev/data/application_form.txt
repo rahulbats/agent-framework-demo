@@ -1,0 +1,36 @@
+COMMERCIAL PROPERTY INSURANCE APPLICATION
+
+SECTION 1 - APPLICANT INFORMATION
+Named Insured: Acme Corporation
+DBA: Acme Manufacturing
+Mailing Address: 1200 Industrial Blvd, Atlanta, GA 30301
+Business Type: Manufacturing - Plastics & Polymers
+NAICS Code: 326199
+Year Established: 2008
+Annual Revenue: $42,000,000
+Number of Employees: 185
+
+SECTION 2 - PROPERTY DETAILS
+Location: 1200 Industrial Blvd, Atlanta, GA 30301
+Building Type: Multi-story industrial facility
+Construction: Fire-resistive (ISO Class 6)
+Year Built: 2010
+Square Footage: 85,000 sq ft
+Number of Stories: 3
+Sprinkler System: Yes - fully sprinklered
+Fire Alarm: Central station monitored
+Roof Age: 8 years (replaced 2018)
+Last Inspection: 09/2025
+
+SECTION 3 - COVERAGE REQUESTED
+Coverage Type: Commercial Property - Special Form
+Building Limit: $12,000,000
+Business Personal Property: $3,000,000
+Total Limit Requested: $15,000,000
+Deductible Preferred: $25,000
+Business Income Limit: $5,000,000
+Effective Date Requested: 07/01/2026
+
+SECTION 4 - LOSS HISTORY
+See attached Loss Run Statement (4 years)
+Any claims > $100,000 in past 5 years? No

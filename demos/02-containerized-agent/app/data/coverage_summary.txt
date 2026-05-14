@@ -1,0 +1,9 @@
+CURRENT COVERAGE SUMMARY
+Insured: Acme Corporation | Policy: CPP-2025-88421
+Carrier: National Indemnity Group | Period: 07/01/2025 - 07/01/2026
+
+Building: $8,000,000 limit, $10,000 ded, $28,500 premium
+Bus. Personal Prop: $2,000,000 limit, $10,000 ded, $8,200 premium
+Business Income: $3,000,000 limit, 72hr ded, $6,800 premium
+Total Annual Premium: $45,000
+Renewal Status: Non-renewed by carrier (portfolio exit)

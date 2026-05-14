@@ -1,0 +1,33 @@
+From: Sarah Mitchell <smitchell@apexbrokers.com>
+To: submissions@example-insurer.com
+Subject: New Submission - Acme Corporation - Property Renewal
+Date: Mon, 11 May 2026 09:14:32 -0400
+
+Hi Underwriting Team,
+
+Please find attached the renewal submission for our client Acme Corporation
+(NAICS 326199, plastics manufacturer in Atlanta, GA). Their current carrier
+is non-renewing due to portfolio rebalancing, not loss-related.
+
+A few highlights I want to flag up front:
+
+- Annual revenue grew from $38M to $42M last year on a new automotive contract
+- They installed a $1.2M ESFR sprinkler upgrade in Q3 2025 (engineering report
+  attached) - we'd love credit for this in pricing
+- They're asking for a $25K deductible but would consider $50K if it brings
+  the premium below $185,000
+- Effective date is 7/1/26, broker of record letter is signed and on file
+- One small slip-and-fall GL claim in 2023 ($18K paid, closed) - not on the
+  property loss run but disclosing for transparency
+
+Target premium: $175K
+Walk-away: $210K
+Decision needed by: 6/15/26 (incumbent quote expires 6/20)
+
+Happy to set up a call with the risk manager (Tom Chen, 404-555-0142) if
+you need anything else. We have three other carriers reviewing.
+
+Thanks!
+Sarah Mitchell
+Apex Brokerage Group | Commercial Lines
+Direct: 678-555-0188

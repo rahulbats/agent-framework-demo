@@ -1,0 +1,47 @@
+[
+    {
+        "program_id": "CP-100",
+        "program_name": "Commercial Property Standard",
+        "description": "Standard commercial property program for low-to-moderate risk",
+        "max_limit": "$15,000,000",
+        "min_limit": "$500,000",
+        "eligible_states": ["GA", "FL", "TX", "CA", "NY", "NC", "SC", "TN", "VA"],
+        "eligible_occupancies": ["Office", "Retail", "Warehouse", "Light Manufacturing", "Manufacturing"],
+        "eligible_construction": ["Fire-resistive", "Non-combustible", "Masonry non-combustible"],
+        "min_year_built": 1990,
+        "max_loss_ratio": 0.60,
+        "sprinkler_required": false,
+        "max_claims_5yr": 5,
+        "notes": "Preferred risk if sprinklered and loss-free 3+ years"
+    },
+    {
+        "program_id": "CP-200",
+        "program_name": "Commercial Property Premium",
+        "description": "Higher-limit program for quality risks with strong loss history",
+        "max_limit": "$50,000,000",
+        "min_limit": "$5,000,000",
+        "eligible_states": ["GA", "FL", "TX", "NC", "SC", "TN", "AL", "VA"],
+        "eligible_occupancies": ["Office", "Light Manufacturing", "Technology"],
+        "eligible_construction": ["Fire-resistive", "Non-combustible"],
+        "min_year_built": 2000,
+        "max_loss_ratio": 0.40,
+        "sprinkler_required": true,
+        "max_claims_5yr": 3,
+        "notes": "Requires fully sprinklered, central station alarm, recent inspection"
+    },
+    {
+        "program_id": "CP-300",
+        "program_name": "Manufacturing Specialty",
+        "description": "Specialty program for manufacturing occupancies",
+        "max_limit": "$25,000,000",
+        "min_limit": "$1,000,000",
+        "eligible_states": ["GA", "FL", "TX", "NC", "SC"],
+        "eligible_occupancies": ["Manufacturing", "Light Manufacturing", "Heavy Manufacturing"],
+        "eligible_construction": ["Fire-resistive"],
+        "min_year_built": 2000,
+        "max_loss_ratio": 0.50,
+        "sprinkler_required": true,
+        "max_claims_5yr": 4,
+        "notes": "NAICS codes 32xxxx-33xxxx. Requires site inspection within 12 months."
+    }
+]
