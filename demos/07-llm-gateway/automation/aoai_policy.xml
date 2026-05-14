@@ -1,0 +1,59 @@
+<!--
+  APIM AI Gateway policy for Azure OpenAI.
+
+  Inbound:
+    1. authentication-managed-identity   - APIM's system MI calls AOAI (no keys).
+    2. llm-semantic-cache-lookup         - vector-match on prompt; serve cache hit.
+    3. llm-token-limit                   - per-subscription-key TPM throttle.
+    4. llm-emit-token-metric             - custom dimensions: Subscription / Agent / Session.
+    5. set-backend-service               - route to the AOAI backend.
+
+  Outbound:
+    6. llm-semantic-cache-store          - persist response for future cache hits.
+
+  Placeholders replaced at deploy time by loadTextContent + replace():
+    {{TPM_PER_KEY}}                      - tokens-per-minute quota per APIM sub key.
+-->
+<policies>
+  <inbound>
+    <base />
+
+    <authentication-managed-identity
+      resource="https://cognitiveservices.azure.com" />
+
+    <llm-semantic-cache-lookup
+      score-threshold="0.05"
+      embeddings-backend-id="aoai-embeddings-backend"
+      embeddings-backend-auth="system-assigned">
+      <vary-by>@(context.Subscription.Id)</vary-by>
+    </llm-semantic-cache-lookup>
+
+    <llm-token-limit
+      tokens-per-minute="{{TPM_PER_KEY}}"
+      counter-key="@(context.Subscription.Id)"
+      estimate-prompt-tokens="true"
+      tokens-consumed-header-name="x-tokens-consumed"
+      remaining-tokens-header-name="x-ratelimit-remaining-tokens" />
+
+    <llm-emit-token-metric namespace="AzureOpenAI">
+      <dimension name="Subscription" value="@(context.Subscription.Name)" />
+      <dimension name="Agent"        value="@(context.Request.Headers.GetValueOrDefault(&quot;x-agent-name&quot;, &quot;unknown&quot;))" />
+      <dimension name="Session"      value="@(context.Request.Headers.GetValueOrDefault(&quot;x-session-id&quot;, &quot;unknown&quot;))" />
+    </llm-emit-token-metric>
+
+    <set-backend-service backend-id="aoai-backend" />
+  </inbound>
+
+  <backend>
+    <base />
+  </backend>
+
+  <outbound>
+    <base />
+    <llm-semantic-cache-store duration="3600" />
+  </outbound>
+
+  <on-error>
+    <base />
+  </on-error>
+</policies>

@@ -63,7 +63,13 @@ resource opChat 'Microsoft.ApiManagement/service/apis/operations@2023-05-01-prev
   }
 }
 
-var policyXml = '<policies>\n  <inbound>\n    <base />\n    <authentication-managed-identity resource="https://cognitiveservices.azure.com" />\n    <llm-semantic-cache-lookup score-threshold="0.05" embeddings-backend-id="aoai-embeddings-backend" embeddings-backend-auth="system-assigned">\n      <vary-by>@(context.Subscription.Id)</vary-by>\n    </llm-semantic-cache-lookup>\n    <llm-token-limit tokens-per-minute="${tpmPerKey}" counter-key="@(context.Subscription.Id)" estimate-prompt-tokens="true" tokens-consumed-header-name="x-tokens-consumed" remaining-tokens-header-name="x-ratelimit-remaining-tokens" />\n    <llm-emit-token-metric namespace="AzureOpenAI">\n      <dimension name="Subscription" value="@(context.Subscription.Name)" />\n      <dimension name="Agent" value="@(context.Request.Headers.GetValueOrDefault(&quot;x-agent-name&quot;, &quot;unknown&quot;))" />\n      <dimension name="Session" value="@(context.Request.Headers.GetValueOrDefault(&quot;x-session-id&quot;, &quot;unknown&quot;))" />\n    </llm-emit-token-metric>\n    <set-backend-service backend-id="aoai-backend" />\n  </inbound>\n  <backend>\n    <base />\n  </backend>\n  <outbound>\n    <base />\n    <llm-semantic-cache-store duration="3600" />\n  </outbound>\n  <on-error>\n    <base />\n  </on-error>\n</policies>'
+// Policy XML lives in a sibling file so it stays human-readable and
+// indentable. We substitute the TPM placeholder at deploy time.
+var policyXml = replace(
+  loadTextContent('aoai_policy.xml'),
+  '{{TPM_PER_KEY}}',
+  string(tpmPerKey)
+)
 
 resource apiPolicy 'Microsoft.ApiManagement/service/apis/policies@2023-05-01-preview' = {
   parent: api
